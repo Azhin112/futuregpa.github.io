@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Future GPA Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      background: #e9f5e9;
+      padding: 1rem;
+      border-radius: 5px;
+      display: none;
+    }
+    .grades-area {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Future GPA Impact Calculator</h1>
+
+    <label for="currentGPA">Current CGPA:</label>
+    <input type="number" id="currentGPA" step="0.01" min="0" max="4" />
+
+    <label for="currentCredits">Credits Earned:</label>
+    <input type="number" id="currentCredits" step="0.5" min="0" />
+
+    <label for="numCourses">Number of Future Courses:</label>
+    <input type="number" id="numCourses" min="1" />
+
+    <button onclick="showGradeInputs()">Next: Enter Grades</button>
+
+    <div class="grades-area" id="gradesArea"></div>
+
+    <div class="result" id="resultBox"></div>
+  </div>
+
+  <script>
+    const gradePoints = {
+      "A": 4.0,
+      "A-": 3.7,
+      "B+": 3.3,
+      "B": 3.0,
+      "B-": 2.7,
+      "C+": 2.3,
+      "C": 2.0,
+      "C-": 1.7,
+      "D+": 1.3,
+      "D": 1.0,
+      "F": 0.0,
+    };
+
+    function showGradeInputs() {
+      const numCourses = parseInt(document.getElementById("numCourses").value);
+      const gradesArea = document.getElementById("gradesArea");
+      gradesArea.innerHTML = ""; // Clear previous
+
+      if (isNaN(numCourses) || numCourses < 1) {
+        gradesArea.innerHTML = "<p style='color:red'>Please enter a valid number of courses.</p>";
+        return;
+      }
+
+      for (let i = 1; i <= numCourses; i++) {
+        const label = document.createElement("label");
+        label.innerText = `Expected Grade for Course ${i}:`;
+
+        const select = document.createElement("select");
+        select.className = "gradeSelect";
+        select.innerHTML = "<option value=''>-- Select Grade --</option>";
+        for (const grade in gradePoints) {
+          select.innerHTML += `<option value="${grade}">${grade}</option>`;
+        }
+
+        gradesArea.appendChild(label);
+        gradesArea.appendChild(select);
+      }
+
+      const calcButton = document.createElement("button");
+      calcButton.innerText = "Calculate Projected CGPA";
+      calcButton.onclick = calculateNewGPA;
+      gradesArea.appendChild(calcButton);
+    }
+
+    function calculateNewGPA() {
+      const currentGPA = parseFloat(document.getElementById("currentGPA").value);
+      const currentCredits = parseFloat(document.getElementById("currentCredits").value);
+      const gradeSelects = document.getElementsByClassName("gradeSelect");
+      const creditPerCourse = 3; // Assuming 3 credits each
+      const resultBox = document.getElementById("resultBox");
+
+      if (isNaN(currentGPA) || isNaN(currentCredits)) {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "Please enter your current GPA and credits.";
+        return;
+      }
+
+      let totalFuturePoints = 0;
+      let validCourses = 0;
+
+      for (let select of gradeSelects) {
+        const grade = select.value;
+        if (gradePoints.hasOwnProperty(grade)) {
+          totalFuturePoints += gradePoints[grade] * creditPerCourse;
+          validCourses++;
+        }
+      }
+
+      if (validCourses < gradeSelects.length) {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "Please select a grade for all courses.";
+        return;
+      }
+
+      const totalFutureCredits = validCourses * creditPerCourse;
+      const totalPoints = (currentGPA * currentCredits) + totalFuturePoints;
+      const totalCredits = currentCredits + totalFutureCredits;
+      const newGPA = totalPoints / totalCredits;
+
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `
+        <strong>Projected CGPA:</strong> ${newGPA.toFixed(2)}<br/>
+        <strong>Total Credits:</strong> ${totalCredits} (Previous: ${currentCredits}, New: ${totalFutureCredits})<br/>
+        <strong>GPA Hours Added:</strong> ${totalFutureCredits}<br/>
+      `;
+    }
+  </script>
+<footer style="
+  margin-top: 2rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  border-top: 1px solid #ccc;
+  background-color: #f9f9f9;
+">
+  © 2025 AUIS GPA Calculator | Created by AZHIN AREZ
+</footer>
+</body>
+</html>
