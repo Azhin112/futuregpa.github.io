@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,6 +90,11 @@
       border-radius: 5px;
       font-size: 1rem;
     }
+
+    .originalGradeSelect {
+      display: none;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -114,7 +118,7 @@
   </div>
 
   <footer>
-    <p>© 2025 AUIS GPA Calculator | Created by AZHIN AREZ</p>
+    <p>© 2025 GPA Calculator | Created by AZHIN AREZ</p>
     <a href="https://azhin112.github.io/auisgpa.github.io/" target="_blank">GPA Calculator</a>
   </footer>
 
@@ -155,6 +159,16 @@
 
           <label>Course ${i} Credit Hours:</label>
           <input type="number" min="0" step="0.5" class="creditInput" placeholder="e.g., 3">
+
+          <label><input type="checkbox" class="retakeCheckbox" onchange="toggleOriginalGrade(this)"> This is a retake of a previous course</label>
+
+          <div class="originalGradeSelect">
+            <label>Original Grade:</label>
+            <select class="originalGrade">
+              <option value="">-- Select Original Grade --</option>
+              ${Object.keys(gradePoints).map(grade => `<option value="${grade}">${grade}</option>`).join('')}
+            </select>
+          </div>
         `;
         container.appendChild(courseDiv);
       }
@@ -165,11 +179,18 @@
       container.appendChild(calcBtn);
     }
 
+    function toggleOriginalGrade(checkbox) {
+      const originalGradeDiv = checkbox.parentElement.nextElementSibling;
+      originalGradeDiv.style.display = checkbox.checked ? "block" : "none";
+    }
+
     function calculateNewCGPA() {
       const currentGPA = parseFloat(document.getElementById("currentGPA").value);
-      const currentCredits = parseFloat(document.getElementById("currentCredits").value);
+      let currentCredits = parseFloat(document.getElementById("currentCredits").value);
       const gradeSelects = document.getElementsByClassName("gradeSelect");
       const creditInputs = document.getElementsByClassName("creditInput");
+      const retakeCheckboxes = document.getElementsByClassName("retakeCheckbox");
+      const originalGradeSelects = document.getElementsByClassName("originalGrade");
       const resultBox = document.getElementById("resultBox");
 
       if (isNaN(currentGPA) || isNaN(currentCredits)) {
@@ -180,10 +201,15 @@
 
       let totalFuturePoints = 0;
       let totalFutureCredits = 0;
+      let removedCredits = 0;
+      let removedPoints = 0;
+      const originalTotalPoints = currentGPA * currentCredits;
 
       for (let i = 0; i < gradeSelects.length; i++) {
         const grade = gradeSelects[i].value;
         const credits = parseFloat(creditInputs[i].value);
+        const isRetake = retakeCheckboxes[i].checked;
+        const originalGrade = originalGradeSelects[i].value;
 
         if (!gradePoints.hasOwnProperty(grade) || isNaN(credits) || credits <= 0) {
           resultBox.style.display = "block";
@@ -193,17 +219,23 @@
 
         totalFuturePoints += gradePoints[grade] * credits;
         totalFutureCredits += credits;
+
+        if (isRetake && gradePoints.hasOwnProperty(originalGrade)) {
+          removedPoints += gradePoints[originalGrade] * credits;
+          removedCredits += credits;
+        }
       }
 
-      const totalQualityPoints = (currentGPA * currentCredits) + totalFuturePoints;
-      const totalCredits = currentCredits + totalFutureCredits;
-      const newCGPA = totalQualityPoints / totalCredits;
+      const adjustedPoints = originalTotalPoints - removedPoints;
+      const adjustedCredits = currentCredits - removedCredits;
+      const newCGPA = (adjustedPoints + totalFuturePoints) / (adjustedCredits + totalFutureCredits);
 
       resultBox.style.display = "block";
       resultBox.innerHTML = `
         <strong>Projected CGPA:</strong> ${newCGPA.toFixed(2)}<br>
-        <strong>Total Earned Credits:</strong> ${totalCredits} (Previous: ${currentCredits}, New: ${totalFutureCredits})<br>
-        <strong>GPA Hours Added:</strong> ${totalFutureCredits}
+        <strong>Total Earned Credits:</strong> ${(adjustedCredits + totalFutureCredits).toFixed(1)}<br>
+        <strong>Retake Credits Removed:</strong> ${removedCredits.toFixed(1)}<br>
+        <strong>New Course Credits Added:</strong> ${totalFutureCredits.toFixed(1)}
       `;
     }
   </script>
