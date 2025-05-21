@@ -98,6 +98,10 @@
   </style>
 </head>
 <body>
+<audio id="celebrationSound" preload="auto">
+ 	 <source src="https://www.orangefreesounds.com/wp-content/uploads/2020/06/Arena-crowd-cheer-sound-effect.mp3" type="audio/mpeg">
+ 	 Your browser does not support the audio element.
+		</audio>
   <div class="container">
     <h1>Future GPA Impact Calculator</h1>
 
@@ -231,13 +235,52 @@
       const newCGPA = (adjustedPoints + totalFuturePoints) / (adjustedCredits + totalFutureCredits);
 
       resultBox.style.display = "block";
-      resultBox.innerHTML = `
-        <strong>Projected CGPA:</strong> ${newCGPA.toFixed(4)}<br>
-        <strong>Total Earned Credits:</strong> ${(adjustedCredits + totalFutureCredits).toFixed(1)}<br>
-        <strong>Retake Credits Removed:</strong> ${removedCredits.toFixed(1)}<br>
-        <strong>New Course Credits Added:</strong> ${totalFutureCredits.toFixed(1)}
-      `;
+      //resultBox.innerHTML = `
+       // <strong>Projected CGPA:</strong> ${newCGPA.toFixed(4)}<br>
+        //<strong>Total Earned Credits:</strong> ${(adjustedCredits + totalFutureCredits).toFixed(1)}<br>
+        //<strong>Retake Credits Removed:</strong> ${removedCredits.toFixed(1)}<br>
+       // <strong>New Course Credits Added:</strong> ${totalFutureCredits.toFixed(1)}
+     // `;
+	
+	let message = `
+  <strong>Projected CGPA:</strong> ${newCGPA}<br>
+  <strong>Total Earned Credits:</strong> ${(adjustedCredits + totalFutureCredits).toFixed(1)}<br>
+  <strong>Retake Credits Removed:</strong> ${removedCredits.toFixed(1)}<br>
+  <strong>New Course Credits Added:</strong> ${totalFutureCredits.toFixed(1)}<br>
+`;
+
+	// Add fun message if CGPA is 2.0 or higher
+	if (newCGPA >= 2.0) {
+ 	  message += `
+ 		   <div style="margin-top:1rem; padding:1rem; background:#d4edda; color:#155724; border:1px solid #c3e6cb; border-radius:5px;">
+   			   🎉 Congratulations! You’re out of probation! Keep it up! 🎓💪
+  			  </div>
+			  `;
+		confetti({
+  		particleCount: 500,
+ 		 startVelocity: 40,
+ 		 spread: 160,
+ 		 ticks: 500,
+ 		 origin: { y: 0.6 }
+		});
+		document.getElementById('celebrationSound').play();
+
+	} else {
+	  message += `
+	    <div style="margin-top:1rem; padding:1rem; background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; border-radius:5px;">
+ 	     ⚠️ You're still under academic probation. You’re close—stay focused and aim higher next term! 📘✨
+	    </div>
+	  `;
+	}
+
+	resultBox.style.display = "block";
+	resultBox.innerHTML = message;
+
     }
   </script>
+	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+	
+
+
 </body>
 </html>
