@@ -127,6 +127,17 @@
   </footer>
 
   <script>
+	  document.getElementById('currentGPA').addEventListener('input', function () {
+   		 const input = this;
+  		  const value = parseFloat(input.value);
+	
+   	 if (value < 0) {
+       		 input.value = 0;
+   		 } else if (value > 4) {
+    	    	input.value = "";
+  		  }
+	});
+
     const gradePoints = {
       "A": 4.0,
       "A-": 3.7,
